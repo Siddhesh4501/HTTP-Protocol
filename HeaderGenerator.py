@@ -1,11 +1,11 @@
-
 from datetime import date,datetime,timedelta
-from email.quoprimime import header_decode
 import time
 import socket
 from Value import Cookiepath,FileInfoPath,FILE_NOT_FOUND,MEDIA_NOT_SUPPORTED,ACCESSLOG
 import uuid
 import os
+
+
 
 generalHeader={
     "Date":0,
@@ -13,7 +13,6 @@ generalHeader={
     "Cache-control": "no-cache",
     "Connection": "keep-alive",
     "Pragma":"no-cache"
-
 }
 
 responseHeader={
@@ -26,7 +25,6 @@ responseHeader={
     "Set-Cookie":0,
     "WWW-Authenticate" : 0
 }
-
 
 entityHeader = {
 	"Allow": "GET, HEAD, PUT",
@@ -145,7 +143,6 @@ def getLastModified(path):
         if(path==i.split(",")[0]):
            return i.split(",")[2].replace('-',',')
     return ""
-    # return "06 Nov 2022 11:16:44 GMT"
 
 def getGeneralHeader():
     header=""
@@ -159,7 +156,6 @@ def getGeneralHeader():
         else:
             header+=generalHeader[i]
         header+="\r\n"
-    # print(header)
     return header
 
 def getCookieCount(cookieId):
@@ -176,7 +172,6 @@ def getCookieCount(cookieId):
             newdata.append(f"{cookieId},{int(i.split(',')[1])+1}")
         else:
            newdata.append(i)
-    # print(newdata)
     with open(Cookiepath,'w') as f:
         f.write("\n".join(newdata))
     return cookieId
@@ -187,10 +182,7 @@ def getEtag(path):
     with open(FileInfoPath,"r") as f:
         data=f.read().split("\n")
     for i in data:
-        # print(i.split(",")[0])
-        # print(path)
         if(path==i.split(",")[0]):
-        # if(os.path.samefile(path,i.split(",")[0])):
            return i.split(",")[1]
     return 0
 
@@ -210,7 +202,6 @@ def getResponseHeader(path,cookieId):
         else:
            header+=str(responseHeader[i])
         header+="\r\n"
-    # print(header)
     return header
 
 def getEntityHeader(path,istext,content_range,content_length,content_location):
@@ -236,7 +227,6 @@ def getEntityHeader(path,istext,content_range,content_length,content_location):
         else:
             header+=str(entityHeader[i])
         header+="\r\n"
-    # print(header)
     return header
 
 def getFileContent(path,start,end,status_code):
@@ -250,14 +240,7 @@ def getFileContent(path,start,end,status_code):
             return ""
         return data[start:end+1]
         
-           
-
-
-
-
-
 def isRangeSatisfiable(start,end,path,status_code):
-    # print(start,end,path,status_code)
     print("in range satifsifle")
     with open(path,"r") as f:
         data=f.read()
@@ -281,7 +264,6 @@ def isRangeSatisfiable(start,end,path,status_code):
     return status_code,content_range,content_length
           
 def compareHttpDates(date1,date2):
-    # date1=date1[5:]
     day1,month1,year1,time1,location1=date1.split(" ")
     day2,month2,year2,time2,location2=date2.split(" ")
     h1,m1,s1=map(int,time1.split(":"))
@@ -289,14 +271,9 @@ def compareHttpDates(date1,date2):
 
     d1=datetime(int(year1),monthMapping.index(month1)+1,int(day1),h1,m1,s1)
     d2=datetime(int(year2),monthMapping.index(month2)+1,int(day2),h2,m2,s2)
-    # print(d1-d2)
-    # print(d2-d1)
     if(str(d2-d1)[0]=='-'):
         return True
     return False
-
-
-
 
 def fileNotFound():
     status_code     = 404
@@ -324,7 +301,6 @@ def fileNotFound():
     message = file_path.read()
     file_path.close()
     return response+"\r\n"+ message
-
 
 def notSupported():
     status_code = 415
@@ -356,13 +332,11 @@ def notSupported():
     return response+'\r\n'+message
 
 def updateFileInfo(path,allowedMethods):
-    # print("int updatefileinfo")
     etag=uuid.uuid1()
     d=getdate()
     d=d.replace(',','-')
     with open(FileInfoPath,'a') as f:
         f.write(f"\n{path},{etag},{d},{allowedMethods}")
-
 
 def removeFileInfo(path):
     data=""
@@ -376,23 +350,6 @@ def removeFileInfo(path):
     with open(FileInfoPath,'w') as f:
         f.write(newdata)
 
-
 def updateAccessLog(host,path,method):
     with open(ACCESSLOG,'a') as f:
         f.write(f"\n{host},{path},{getdate()},{method}") 
-
-
-
-
-
-print(getdate())
-# getGeneralHeader()
-# getResponseHeader()
-# getEntityHeader("dsdsd",1)
-# print(getCookieCount("/home/siddhesh/Documents/CN projects/index.html"))
-
-# compareHttpDates("31 Dec 1999 23:59:59 GMT","31 Dec 1999 22:59:59 GMT")
-# isRangeSatisfiable(-1,-1,"/home/siddhesh/Documents/CN projects/index.html",200)
-
-# fileNotFound()
-

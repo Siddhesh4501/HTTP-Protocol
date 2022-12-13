@@ -1,8 +1,7 @@
 import os
-dirpath=os.path.abspath(os.getcwd())
-print(dirpath)
-maxConnection=100
 
+dirpath=os.path.abspath(os.getcwd())
+maxConnection=100
 Cookiepath=str(dirpath)+"/Log/cookie.csv"
 FileInfoPath=str(dirpath)+"/Log/fileinfo.csv"
 FILE_NOT_FOUND=str(dirpath)+"/ResponsePages/fileNotFound.html"

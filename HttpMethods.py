@@ -11,7 +11,6 @@ def GET(message,method="GET"):
     reqallheaders={}
     for i in data.split("\r\n")[1:]:
         reqallheaders[i.split(":")[0]]=i.split(":")[1:]
-    # print(reqallheaders)
     userAgent=reqallheaders["User-Agent"][0][1:]
     flag=False
     cookieId=0
@@ -22,25 +21,17 @@ def GET(message,method="GET"):
     filename=reqheader.split()[1][1:]
     if(filename==""):
         filename+="index.html"
-    # print(filename)
     pathfile=RESOURCE+filename
-    
-
     status_code=200
     messageToSend=""
     start=-1
     end=-1
-    
     if(os.path.exists(pathfile)):
 
         if("Range" in reqallheaders.keys()):
             start=int(reqallheaders["Range"][0][7:].split('-')[0])
             end=int(reqallheaders["Range"][0][7:].split('-')[1])
-            # print("In range")
             if("If-Range" in reqallheaders.keys()):
-                # print("in If-Rage")
-                # print(reqallheaders["If-Range"][0][1:])
-                # print(str(getEtag(pathfile)))
                 if(reqallheaders["If-Range"][0][1:]==str(getEtag(pathfile))):
                     status_code=206
                 else:
@@ -72,22 +63,20 @@ def GET(message,method="GET"):
         entity_header=getEntityHeader(pathfile,1,content_range,content_length,pathfile)
         response_header=getResponseHeader(pathfile,cookieId)
         header=status_line+general_header+entity_header+response_header
-        # header=status_line+general_header+entity_header
         header+="\r\n"
         messageToSend=getFileContent(pathfile,start,end,status_code)
-        # print(header+messageToSend)
         updateAccessLog(userAgent,pathfile,method)
         return header+messageToSend
     else:
         status_code=404
         return fileNotFound()
 
+
 def HEAD(message):
-    # print("In header")
     response=GET(message,"HEAD")
     response= response.split("\r\n\r\n")[0]
-    # print(response)
     return response+"\r\n\r\n"
+
 
 def POST(message):
     print(message)
@@ -102,22 +91,17 @@ def POST(message):
     filename=reqheader.split()[1][1:]
     print(filename)
     reqallheaders={}
-    # flag=False
     cookieId=0
     print("cookie")
     binary=False
-    # print(data)
-    # print(newbody)
     status_code=201
     for i in data.split("\r\n")[1:]:
         reqallheaders[i.split(":")[0]]=i.split(":")[1:]
-    # print(reqallheaders.keys())
     userAgent=reqallheaders["User-Agent"][0][1:]
     if (('Cookie' in reqallheaders.keys()) and " id" in reqallheaders["Cookie"]):
         flag=True
         cookieId=reqallheaders["Cookie"][1]
         print("cookieidis",cookieId)
-    # print(reqallheaders)
     if "image/png" in "".join(reqallheaders["Content-Type"]):
         binary=True
     
@@ -129,7 +113,6 @@ def POST(message):
             dataToBeStored[j[0]]=j[1]
         print(dataToBeStored)
         dataToBeStored=json.dumps(dataToBeStored)
-        # print(dataToBeStored)
         id=uuid.uuid1()
         filepath=RESOURCE+filename+"/"+str(id)+".json"
         contentLocation=filename+"/"+str(id)+".json"
@@ -149,7 +132,6 @@ def POST(message):
                 dataToBeStored.append(newbody[i].split("name=")[1][1:-1]) 
             elif(i%3==2):
                 dataToBeStored.append(newbody[i])
-        # print(dataToBeStoreda)
         def Convert(lst):
             res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
             return res_dct
@@ -182,16 +164,12 @@ def POST(message):
     end=-1
     pathfile=SAVESUCCESFULLY
     messageToSend=getFileContent(pathfile,start,end,status_code)
-    # print(header+messageToSend)
     updateAccessLog(userAgent,filepath,"POST")
     return header+messageToSend
 
 
 
-
-
 def PUT(message):
-    # print(message)
     data=message.split("\r\n\r\n")[0]
     body=message.split("\r\n\r\n")[1:]
     newbody=[]
@@ -204,23 +182,17 @@ def PUT(message):
     reqallheaders={}
     cookieId=0
     binary=False
-    # print(data)
     for i in data.split("\r\n")[1:]:
         reqallheaders[i.split(":")[0]]=i.split(":")[1:]
-    # print(reqallheaders.keys())
     userAgent=reqallheaders["User-Agent"][0][1:]
     if (('Cookie' in reqallheaders.keys()) and " id" in reqallheaders["Cookie"]):
         flag=True
         cookieId=reqallheaders["Cookie"][1]
-        # print("cookieidis",cookieId)
-    # print(reqallheaders)
     if "image/png" in "".join(reqallheaders["Content-Type"]):
         binary=True
     print(filename)
     print(newbody)
-
     status_code=""
-
     dataToBeStored=""
     if(reqallheaders["Content-Type"]==[" application/x-www-form-urlencoded"]):
         dataToBeStored={}
@@ -228,7 +200,6 @@ def PUT(message):
             dataToBeStored[j[0]]=j[1]
         print(dataToBeStored)
         dataToBeStored=json.dumps(dataToBeStored)
-        # print(dataToBeStored)
 
     elif("multipart/form-data" in reqallheaders["Content-Type"][0][1:]):
         tempData = data
@@ -240,15 +211,11 @@ def PUT(message):
                 dataToBeStored.append(newbody[i].split("name=")[1][1:-1]) 
             elif(i%3==2):
                 dataToBeStored.append(newbody[i])
-        # print(dataToBeStoreda)
-
         def Convert(lst):
             res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
             return res_dct
         dataToBeStored=Convert(dataToBeStored)
         dataToBeStored=json.dumps(dataToBeStored)
-        # print(dataToBeStored)
-
     else:
         print("int not supported")
         status_code=405
@@ -260,7 +227,6 @@ def PUT(message):
     else:
         path=RESOURCE+filename+"/"
     
-    # print(path)
     filepath=""
     if(os.path.isdir(path)):
         if(isPathFile(filename) and os.path.isfile(RESOURCE+filename)):
@@ -301,13 +267,10 @@ def PUT(message):
             updateFileInfo(filepath,"GET DELETE PUT HEAD")
             f.write(dataToBeStored)
 
-
-
     start=-1
     end=-1
     pathfile=UPDATESUCCESFULLY
     status_code,content_range,content_length=isRangeSatisfiable(start,end,pathfile,status_code)
-        
     status_line="HTTP/1.1 "+str(status_code)+" "+statusCodes[status_code]+"\r\n"
     general_header=getGeneralHeader()
     entity_header=getEntityHeader(pathfile,1,content_range,content_length,contentLocation)
@@ -319,9 +282,7 @@ def PUT(message):
     end=-1
     pathfile=UPDATESUCCESFULLY
     messageToSend=getFileContent(pathfile,start,end,status_code)
-    # print(header+messageToSend)
     updateAccessLog(userAgent,filepath,"PUT")
-
     return header+messageToSend
     
 
@@ -359,35 +320,7 @@ def DELETE(message):
     else:
         status_code=404
         return fileNotFound()
-
     status_line="HTTP/1.1 "+str(status_code)+" "+statusCodes[status_code]+"\r\n"
     general_header=getGeneralHeader()
     updateAccessLog(userAgent,path,"DELETE")
-
     return status_line+general_header+'\r\n'
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-    
-
